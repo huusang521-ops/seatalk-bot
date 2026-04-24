@@ -5,7 +5,7 @@ const app = express();
 
 // ===== CONFIG =====
 const WEBHOOK = "https://openapi.seatalk.io/webhook/group/jrPZBrvfQ9G0o2nfIApc6g";
-const LIMIT_MINUTES = 5; // 👉 chỉnh thời gian RR tại đây
+const LIMIT_MINUTES = 1; // 👉 chỉnh thời gian RR tại đây
 
 // ===== MEMORY LƯU TRẠNG THÁI =====
 const rrList = {};
