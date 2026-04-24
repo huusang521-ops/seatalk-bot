@@ -5,7 +5,7 @@ const app = express();
 
 // ===== CONFIG =====
 const WEBHOOK = "https://openapi.seatalk.io/webhook/group/jrPZBrvfQ9G0o2nfIApc6g";
-const GOOGLE_SCRIPT_URL = "DÁN_LINK_WEB_APP_GOOGLE_SCRIPT_Ở_ĐÂY";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxApLdZ8LzMZEUiWFQvzmWaGtKgNpZO6VOtO7ubU95EtLLPJpZszz9Z9OENp6fBhNdr/exec";
 
 // ===== SEND MESSAGE =====
 async function sendMessage(content) {
