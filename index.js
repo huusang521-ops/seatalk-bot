@@ -1,75 +1,57 @@
 const express = require("express");
 const axios = require("axios");
-const bodyParser = require("body-parser");
 
 const app = express();
-app.use(bodyParser.json());
 
 // ===== CONFIG =====
-const WEBHOOK_OUT = "https://openapi.seatalk.io/webhook/group/jrPZBrvfQ9G0o2nfIApc6g";
+const WEBHOOK = "https://openapi.seatalk.io/webhook/group/jrPZBrvfQ9G0o2nfIApc6g";
+const GOOGLE_SCRIPT_URL = "DÁN_LINK_WEB_APP_GOOGLE_SCRIPT_Ở_ĐÂY";
 
-// ===== HÀM GỬI TIN NHẮN =====
+// ===== SEND MESSAGE =====
 async function sendMessage(content) {
-  try {
-    await axios.post(WEBHOOK_OUT, {
-      tag: "text",
-      text: {
-        format: 1,
-        content: content
-      }
-    });
-  } catch (err) {
-    console.log("Send error:", err.message);
-  }
+  await axios.post(WEBHOOK, {
+    tag: "text",
+    text: { format: 1, content }
+  });
 }
 
-// ===== WEBHOOK NHẬN EVENT TỪ SEATALK =====
-app.post("/seatalk-webhook", async (req, res) => {
-  const body = req.body;
+// ===== RR =====
+app.get("/rr", async (req, res) => {
+  const email = req.query.email;
 
-  console.log("Incoming:", JSON.stringify(body));
+  if (!email) return res.send("Missing email");
 
-  try {
-    // ⚠️ tùy format thực tế của Seatalk
-    const message = body?.event?.message?.text || "";
-    const email = body?.event?.sender?.email || "unknown";
+  await sendMessage(
+    "🚻 RR REQUEST\n" +
+    `👤 <mention-tag target="seatalk://user?email=${email}"/>\n` +
+    "⏳ Status: Đang nghỉ"
+  );
 
-    // ===== XỬ LÝ LỆNH =====
-    if (message.toLowerCase() === "rr") {
-      const now = new Date();
-      const deadline = new Date(now.getTime() + 1 * 60000);
+  // log Google Sheet
+  await axios.get(GOOGLE_SCRIPT_URL + "?action=rr&email=" + email);
 
-      const timeStr = deadline.toLocaleTimeString("vi-VN");
-
-      const reply =
-        "✅ XÁC NHẬN ĐI RR\n" +
-        `👤 <mention-tag target="seatalk://user?email=${email}"/>\n` +
-        `🕒 Deadline: ${timeStr}`;
-
-      await sendMessage(reply);
-    }
-
-    if (message.toLowerCase() === "online") {
-      const reply =
-        "🟢 ĐÃ ONLINE\n" +
-        `👤 <mention-tag target="seatalk://user?email=${email}"/>`;
-
-      await sendMessage(reply);
-    }
-
-  } catch (err) {
-    console.log(err);
-  }
-
-  res.sendStatus(200);
+  res.send("OK");
 });
 
-// ===== START SERVER =====
-const PORT = process.env.PORT || 3000;
+// ===== ONLINE =====
+app.get("/online", async (req, res) => {
+  const email = req.query.email;
 
-app.listen(PORT, () => {
-  console.log("Bot running on port " + PORT);
+  await sendMessage(
+    "🟢 BACK ONLINE\n" +
+    `👤 <mention-tag target="seatalk://user?email=${email}"/>`
+  );
+
+  await axios.get(GOOGLE_SCRIPT_URL + "?action=online&email=" + email);
+
+  res.send("OK");
 });
+
+// ===== ROOT TEST =====
 app.get("/", (req, res) => {
   res.send("Bot is running");
 });
+
+// ===== START =====
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Running on " + PORT));
