@@ -4,7 +4,7 @@ const axios = require("axios");
 const app = express();
 
 // ===== CONFIG =====
-const WEBHOOK = "https://openapi.seatalk.io/webhook/group/jrPZBrvfQ9G0o2nfIApc6g";
+const WEBHOOK = "https://openapi.seatalk.io/webhook/group/Nwqq_znsTeu7TTS29Y5alg";
 const LIMIT_MINUTES = 1; // 👉 chỉnh thời gian RR tại đây
 
 // ===== MEMORY LƯU TRẠNG THÁI =====
