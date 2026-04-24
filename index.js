@@ -4,7 +4,7 @@ const axios = require("axios");
 const app = express();
 
 // ===== CONFIG =====
-const WEBHOOK = "https://openapi.seatalk.io/webhook/group/Nwqq_znsTeu7TTS29Y5alg";
+const WEBHOOK = "https://openapi.seatalk.io/webhook/group/5kVsimKlSlyYBQY357vTOw";
 const LIMIT_MINUTES = 1; // 👉 chỉnh thời gian RR tại đây
 
 // ===== MEMORY LƯU TRẠNG THÁI =====
@@ -41,7 +41,7 @@ app.get("/rr", async (req, res) => {
   };
 
   await sendMessage(
-    "🚻 RR REQUEST\n" +
+    "🚻 Restroom Request\n" +
     `👤 <mention-tag target="seatalk://user?email=${email}"/>\n` +
     `⏳ Deadline: ${deadline.toLocaleTimeString("vi-VN")}`
   );
@@ -72,9 +72,9 @@ setInterval(async () => {
 
     if (now > data.deadline && !data.warned) {
       await sendMessage(
-        "🚨 QUÁ GIỜ RR\n" +
+        "🚨 QUÁ GIỜ RR rồi nhaaa\n" +
         `👤 <mention-tag target="seatalk://user?email=${email}"/>\n` +
-        "👉 Vui lòng quay lại làm việc!"
+        "👉 Vui lòng quay lại làm việc để không ảnh hưởng giờ avai nhesss!"
       );
 
       rrList[email].warned = true;
