@@ -5,53 +5,91 @@ const app = express();
 
 // ===== CONFIG =====
 const WEBHOOK = "https://openapi.seatalk.io/webhook/group/jrPZBrvfQ9G0o2nfIApc6g";
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxApLdZ8LzMZEUiWFQvzmWaGtKgNpZO6VOtO7ubU95EtLLPJpZszz9Z9OENp6fBhNdr/exec";
+const LIMIT_MINUTES = 5; // 👉 chỉnh thời gian RR tại đây
 
-// ===== SEND MESSAGE =====
+// ===== MEMORY LƯU TRẠNG THÁI =====
+const rrList = {};
+
+// ===== HÀM GỬI MESSAGE =====
 async function sendMessage(content) {
-  await axios.post(WEBHOOK, {
-    tag: "text",
-    text: { format: 1, content }
-  });
+  try {
+    await axios.post(WEBHOOK, {
+      tag: "text",
+      text: {
+        format: 1,
+        content: content
+      }
+    });
+  } catch (err) {
+    console.log("Send error:", err.message);
+  }
 }
 
-// ===== RR =====
+// ===== API RR =====
 app.get("/rr", async (req, res) => {
   const email = req.query.email;
 
   if (!email) return res.send("Missing email");
 
+  const now = new Date();
+  const deadline = new Date(now.getTime() + LIMIT_MINUTES * 60000);
+
+  rrList[email] = {
+    start: now,
+    deadline: deadline,
+    warned: false
+  };
+
   await sendMessage(
     "🚻 RR REQUEST\n" +
     `👤 <mention-tag target="seatalk://user?email=${email}"/>\n` +
-    "⏳ Status: Đang nghỉ"
+    `⏳ Deadline: ${deadline.toLocaleTimeString("vi-VN")}`
   );
 
-  // log Google Sheet
-  await axios.get(GOOGLE_SCRIPT_URL + "?action=rr&email=" + email);
-
-  res.send("OK");
+  res.send("RR OK");
 });
 
-// ===== ONLINE =====
+// ===== API ONLINE =====
 app.get("/online", async (req, res) => {
   const email = req.query.email;
+
+  delete rrList[email];
 
   await sendMessage(
     "🟢 BACK ONLINE\n" +
     `👤 <mention-tag target="seatalk://user?email=${email}"/>`
   );
 
-  await axios.get(GOOGLE_SCRIPT_URL + "?action=online&email=" + email);
-
-  res.send("OK");
+  res.send("ONLINE OK");
 });
 
-// ===== ROOT TEST =====
+// ===== AUTO CHECK QUÁ GIỜ =====
+setInterval(async () => {
+  const now = new Date();
+
+  for (const email in rrList) {
+    const data = rrList[email];
+
+    if (now > data.deadline && !data.warned) {
+      await sendMessage(
+        "🚨 QUÁ GIỜ RR\n" +
+        `👤 <mention-tag target="seatalk://user?email=${email}"/>\n` +
+        "👉 Vui lòng quay lại làm việc!"
+      );
+
+      rrList[email].warned = true;
+    }
+  }
+}, 60000); // chạy mỗi 1 phút
+
+// ===== TEST SERVER =====
 app.get("/", (req, res) => {
   res.send("Bot is running");
 });
 
-// ===== START =====
+// ===== START SERVER =====
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Running on " + PORT));
+
+app.listen(PORT, () => {
+  console.log("Bot running on port " + PORT);
+});
